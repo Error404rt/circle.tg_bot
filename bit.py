@@ -1,7 +1,5 @@
 import asyncio
 import os
-TOKEN = os.getenv("8284574123:AAHLqnW_v6a6xix4DQ1Czu3YyijWptvB4pw")
-import subprocess
 import tempfile
 import logging
 from datetime import datetime
@@ -18,7 +16,10 @@ import yt_dlp
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-TOKEN = "8284574123:AAHLqnW_v6a6xix4DQ1Czu3YyijWptvB4pw"
+# Извлечение токена из переменной окружения (установить в Render)
+TOKEN = os.getenv("TOKEN")
+if not TOKEN:
+    raise ValueError("Токен не установлен. Укажи TOKEN в Environment Variables.")
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -29,7 +30,7 @@ MAX_NOTE_DURATION = 60
 # Очередь для обработки (для многих пользователей)
 task_queue = deque()
 AVERAGE_PROCESSING_TIME = 30  # Секунд на задачу
-MAX_CONCURRENT_TASKS = 1  # Только 1 задача одновременно, остальные в очередь
+MAX_CONCURRENT_TASKS = 1  # Только 1 задача одновременно
 
 class DownloadStates(StatesGroup):
     waiting_for_tt_url = State()
@@ -39,7 +40,6 @@ async def process_queue(user_id: int, task: callable, message: Message):
     """Обработка очереди"""
     task_queue.append((user_id, task, message))
     queue_position = len([t for t in task_queue if t[0] == user_id])
-    # Очередь начинается с 2 пользователей (1 работает, 1 ждёт)
     if len(task_queue) > 1:
         wait_time = (queue_position - 1) * AVERAGE_PROCESSING_TIME
         minutes = int(wait_time // 60)
@@ -119,7 +119,7 @@ async def handle_yt_url(message: Message, state: FSMContext):
                 try:
                     temp_file = tempfile.mktemp(suffix='.mp4')
                     ydl_opts = {
-                        'format': f'bestvideo[height<={quality}][vcodec!*=vp9]+bestaudio/best',  # Поддержка Shorts
+                        'format': f'bestvideo[height<={quality}][vcodec!*=vp9]+bestaudio/best',
                         'outtmpl': temp_file,
                         'quiet': True,
                         'no_warnings': True,
@@ -127,11 +127,11 @@ async def handle_yt_url(message: Message, state: FSMContext):
                         'extractor_args': {
                             'youtube': {
                                 'player_skip': 'js',
-                                'skip': ['dash', 'hls'],  # Обход ограничений Shorts
+                                'skip': ['dash', 'hls'],
                             }
                         },
-                        'retry_max': 3,  # Retry для YouTube rate limiting
-                        'force_keyframes_at_cuts': True  # Улучшение обработки коротких видео
+                        'retry_max': 3,
+                        'force_keyframes_at_cuts': True
                     }
                     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                         ydl.download([url])
@@ -248,21 +248,15 @@ async def handle_other_messages(message: Message):
         await message.answer("🤖 <b>Не понимаю.</b>\nИспользуй /help или отправь видео!", parse_mode="HTML")
 
 async def main():
+    # Настройка webhook для Render
+    webhook_url = f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}/webhook"
+    await bot.set_webhook(webhook_url)
+    # Запуск диспетчера (webhook будет обрабатывать запросы)
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
     print("🤖 Бот запускается...")
-    try:
-        subprocess.run(["ffmpeg", "-version"], check=True, capture_output=True)
-        print("✅ FFmpeg найден")
-    except:
-        print("❌ FFmpeg не найден! Установи: pkg install ffmpeg")
-        exit(1)
-    try:
-        subprocess.run(["yt-dlp", "--version"], check=True, capture_output=True)
-        print("✅ yt-dlp найден")
-    except:
-        print("❌ yt-dlp не найден! Установи: pip install yt-dlp")
-        exit(1)
+    # Проверка зависимостей адаптирована для Render (локальная проверка убрана)
+    print("✅ Зависимости считаются установленными на Render")
     print("🚀 Бот запущен!")
     asyncio.run(main())
