@@ -1,5 +1,6 @@
 import asyncio
 import os
+TOKEN = os.getenv("8284574123:AAHLqnW_v6a6xix4DQ1Czu3YyijWptvB4pw")
 import subprocess
 import tempfile
 import logging
