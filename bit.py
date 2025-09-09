@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Извлечение токена из переменной окружения (установить в Render)
-TOKEN = os.getenv("TOKEN")
+TOKEN = os.getenv("8284574123:AAHLqnW_v6a6xix4DQ1Czu3YyijWptvB4pw")
 if not TOKEN:
     raise ValueError("Токен не установлен. Укажи TOKEN в Environment Variables.")
 
