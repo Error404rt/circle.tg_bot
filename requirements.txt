@@ -1,4 +1,4 @@
 --index-url https://mirrors.aliyun.com/pypi/simple/
 --trusted-host mirrors.aliyun.com
 aiogram==3.13.1
-yt-dlp
+yt-dlp==2025.09.05 
