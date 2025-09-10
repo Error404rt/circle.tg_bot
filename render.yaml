@@ -7,11 +7,10 @@ services:
     startCommand: python bot.py
     envVars:
       - key: TOKEN
-        value: 8284574123:AAHLqnW_v6a6xix4DQ1Czu3YyijWptvB4pw  # Твой токен
-        sync: false  # Не синхронизировать секрет
+        sync: false  # Токен будет задан в Environment Variables
       - key: RENDER_EXTERNAL_HOSTNAME
         fromDatabase:
-          name: circle-tg-bot  # Автоматически берёт hostname от Render
+          name: circle-tg-bot  # Автоматически берёт hostname
     autoDeploy: true
     region: frankfurt
     healthCheckPath: /webhook
